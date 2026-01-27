@@ -1,0 +1,860 @@
+/* =========================
+   GLOBAL RESET + THEME
+========================= */
+.mini-card {
+  position: relative;
+}
+
+.mini-card * {
+  pointer-events: auto;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #ffffff;
+  --text: #111827;
+  --muted: #6b7280;
+  --card: rgba(255, 255, 255, 0.92);
+  --border: rgba(17, 24, 39, 0.08);
+
+  --primary: #4f46e5;
+  --primary2: #2563eb;
+  --danger: #ef4444;
+
+  --shadow: 0 18px 45px rgba(17, 24, 39, 0.12);
+}
+
+body {
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial,
+    sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+a {
+  color: inherit;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.btn {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--text);
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: 0.25s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary2));
+  color: white;
+  border: none;
+}
+
+.btn.danger {
+  background: var(--danger);
+  border: none;
+  color: white;
+}
+
+.btn.small {
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+/* =========================
+   NAVBAR (LANDING)
+========================= */
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 22px;
+  position: sticky;
+  top: 0;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+  z-index: 10;
+}
+
+.brand {
+  color: #111827;
+  font-weight: 900;
+  font-size: 20px;
+  text-decoration: none;
+}
+
+.brand-dot {
+  color: var(--primary);
+}
+
+.nav-links {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.nav-item {
+  color: rgba(17, 24, 39, 0.75);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.nav-item:hover {
+  color: #111827;
+}
+
+.nav-item.active {
+  color: #111827;
+}
+
+/* =========================
+   LANDING PAGE (LIGHT)
+========================= */
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 20px;
+  padding: 50px 22px;
+  max-width: 1100px;
+  margin: auto;
+}
+
+.hero-left h1 {
+  color: #111827;
+  font-size: 44px;
+  line-height: 1.1;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.hero-badges {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.badge {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(79, 70, 229, 0.08);
+  color: rgba(17, 24, 39, 0.85);
+  font-weight: 800;
+  border: 1px solid rgba(79, 70, 229, 0.18);
+}
+
+.hero-right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mock-card {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  padding: 18px;
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.mock-card h3 {
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.mock-line {
+  height: 10px;
+  background: rgba(17, 24, 39, 0.08);
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.mock-line.small {
+  width: 70%;
+}
+
+.mock-total {
+  margin-top: 16px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.feature-section {
+  max-width: 1100px;
+  margin: auto;
+  padding: 35px 22px;
+}
+
+.feature-section.alt {
+  background: rgba(79, 70, 229, 0.04);
+  border-top: 1px solid rgba(17, 24, 39, 0.06);
+  border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: center;
+}
+
+.feature-grid.reverse {
+  direction: rtl;
+}
+
+.feature-grid.reverse > * {
+  direction: ltr;
+}
+
+.feature-text h2 {
+  color: #111827;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.feature-image .image-box {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  padding: 18px;
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.image-title {
+  font-weight: 900;
+  color: #111827;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.pricing {
+  max-width: 1100px;
+  margin: auto;
+  padding: 45px 22px;
+  text-align: center;
+}
+
+.pricing h2 {
+  color: #111827;
+  font-weight: 900;
+}
+
+.pricing-card {
+  margin: 18px auto 0;
+  max-width: 420px;
+  padding: 22px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  text-align: left;
+  box-shadow: var(--shadow);
+}
+
+.price {
+  font-size: 28px;
+  font-weight: 900;
+  color: #111827;
+  margin: 10px 0;
+}
+
+.pricing-card ul {
+  margin: 0;
+  padding-left: 18px;
+  color: rgba(17, 24, 39, 0.85);
+  font-weight: 700;
+}
+
+.footer {
+  text-align: center;
+  padding: 25px;
+  border-top: 1px solid rgba(17, 24, 39, 0.06);
+}
+
+/* =========================
+   LOGIN PREMIUM UI (LIGHT)
+========================= */
+
+.login-wrap {
+  min-height: 100vh;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: radial-gradient(circle at top, #eef2ff, #ffffff);
+  color: #111827;
+}
+
+.login-topbar {
+  max-width: 1100px;
+  margin: 0 auto 14px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.login-card {
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  border-radius: 18px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  box-shadow: 0 18px 45px rgba(17, 24, 39, 0.12);
+}
+
+.login-left {
+  padding: 28px;
+  background: linear-gradient(
+    135deg,
+    rgba(79, 70, 229, 0.12),
+    rgba(255, 255, 255, 0.8)
+  );
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--primary);
+  box-shadow: 0 0 25px rgba(79, 70, 229, 0.55);
+}
+
+.login-sub {
+  margin-top: 10px;
+  font-size: 14px;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+.login-hero {
+  margin-top: 18px;
+  border-radius: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(17, 24, 39, 0.08);
+}
+
+.login-hero-img {
+  width: 100%;
+  height: 220px;
+  object-fit: contain;
+  display: block;
+}
+
+.login-features {
+  margin-top: 18px;
+  display: grid;
+  gap: 10px;
+  font-size: 14px;
+  opacity: 0.95;
+}
+
+.feat {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  font-weight: 700;
+}
+
+.login-right {
+  padding: 28px;
+  background: rgba(255, 255, 255, 0.8);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+.login-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.login-muted {
+  margin: 8px 0 18px;
+  font-size: 14px;
+  opacity: 0.75;
+}
+
+.login-form {
+  display: grid;
+  gap: 14px;
+}
+
+.field label {
+  font-size: 13px;
+  font-weight: 900;
+  opacity: 0.85;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.field input {
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  outline: none;
+  background: rgba(255, 255, 255, 0.95);
+  color: #111827;
+  font-weight: 700;
+}
+
+.login-error {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.login-btn {
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-weight: 900;
+}
+
+.login-bottom {
+  margin-top: 14px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.link {
+  color: var(--primary);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .login-card {
+    grid-template-columns: 1fr;
+  }
+
+  .login-hero-img {
+    height: 200px;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================
+   INVOICE PRINT CSS (A4)
+========================= */
+
+.invoicePrintWrap {
+  padding: 0;
+}
+
+.invoicePaperA4 {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  background: white;
+  border: 2px solid #000;
+  padding: 12px;
+  color: #000;
+}
+
+/* HEADER TABLE */
+.invHeaderTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 8px;
+}
+
+.invHeaderTable td {
+  padding: 4px 6px;
+  font-size: 12px;
+}
+
+.hdrLeft {
+  width: 33%;
+  text-align: left;
+  font-weight: 700;
+}
+
+.hdrCenter {
+  width: 34%;
+  text-align: center;
+  font-weight: 900;
+}
+
+.hdrRight {
+  width: 33%;
+  text-align: right;
+  font-weight: 700;
+}
+
+.hdrCompanyName {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 900;
+  text-transform: uppercase;
+  padding-top: 6px;
+  padding-bottom: 4px;
+}
+
+.hdrHrCell {
+  padding: 0 !important;
+}
+
+.hdrHr {
+  border: none;
+  border-top: 1.5px solid #000;
+  margin: 0;
+}
+
+.hdrCompanyDetails {
+  text-align: center;
+  font-size: 12px;
+  padding-top: 6px;
+  padding-bottom: 8px;
+}
+
+/* BOX GRID */
+.invTwoBoxGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin-top: 0;
+}
+
+.invBox {
+  border: 1.5px solid #000;
+  padding: 8px;
+  font-size: 12px;
+}
+
+.minBox {
+  min-height: 100px;
+}
+
+.dotted {
+  border-bottom: 1px dotted #000;
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+}
+
+/* MAIN ITEMS TABLE */
+.invMainTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0;
+  font-size: 12px;
+  border: 1.5px solid #000;
+}
+
+.invMainTable th,
+.invMainTable td {
+  border: 1.5px solid #000;
+  padding: 6px;
+}
+
+.invMainTable th {
+  font-weight: 900;
+  text-align: center;
+}
+
+/* GRAND TOTAL */
+.invGrandRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1.5px solid #000;
+  border-top: none;
+}
+
+.invGrandLeft {
+  padding: 8px;
+  font-size: 12px;
+  border-right: 1.5px solid #000;
+}
+
+.invGrandRight {
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.grandText,
+.grandAmt {
+  font-weight: 900;
+}
+
+/* WORDS */
+.invWordsRow {
+  border: 1.5px solid #000;
+  border-top: none;
+  padding: 8px;
+  font-size: 12px;
+}
+
+/* TAX TABLE */
+.invTaxTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0;
+  font-size: 12px;
+  border: 1.5px solid #000;
+}
+
+.invTaxTable th,
+.invTaxTable td {
+  border: 1.5px solid #000;
+  padding: 6px;
+}
+
+.invTaxTable th {
+  font-weight: 900;
+  text-align: center;
+}
+
+/* PIECES */
+.piecesRow {
+  display: flex;
+  justify-content: flex-end;
+  border: 1.5px solid #000;
+  border-top: none;
+  padding: 8px;
+  font-size: 12px;
+}
+
+/* FOOTER */
+.invFooterGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin-top: 0;
+}
+
+.invFooterBox {
+  border: 1.5px solid #000;
+  padding: 10px;
+  min-height: 220px;
+  font-size: 12px;
+}
+
+.small {
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.printTopBar {
+  width: 100%;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* PRINT SETTINGS */
+@media print {
+  @page {
+    size: A4;
+    margin: 6mm;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .sidebar {
+    display: none !important;
+  }
+
+  .main {
+    padding: 0 !important;
+  }
+
+  .invoicePaperA4 {
+    width: 100% !important;
+    max-width: 100% !important;
+    border: 2px solid #000 !important;
+    padding: 0 !important;
+  }
+}
+
+/* =========================
+   DASHBOARD HOVER SLIDES
+========================= */
+
+.lowStockCard,
+.todaySalesCard,
+.monthSalesCard,
+.invoicesCard,
+.customersCard,
+.bestSellingCard {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  border-radius: 22px;
+}
+
+/* default hidden */
+.lowStockSlide,
+.todaySalesSlide,
+.monthSalesSlide,
+.invoicesSlide,
+.customersSlide,
+.bestSellingSlide {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 22px;
+  padding: 14px;
+  transform: translateX(105%);
+  transition: 0.35s ease;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  background: rgba(37, 99, 235, 0.92);
+  color: white;
+
+  /* ✅ allow clicks inside slide */
+  pointer-events: auto;
+}
+
+/* open on hover */
+.lowStockCard:hover .lowStockSlide,
+.todaySalesCard:hover .todaySalesSlide,
+.monthSalesCard:hover .monthSalesSlide,
+.invoicesCard:hover .invoicesSlide,
+.customersCard:hover .customersSlide,
+.bestSellingCard:hover .bestSellingSlide {
+  transform: translateX(0%);
+}
+
+/* ✅ FIX: Hover slide stable even when cursor is on slide */
+.lowStockSlide:hover,
+.todaySalesSlide:hover,
+.monthSalesSlide:hover,
+.invoicesSlide:hover,
+.customersSlide:hover,
+.bestSellingSlide:hover {
+  transform: translateX(0%);
+}
+
+.lowStockHead,
+.todaySalesHead,
+.monthSalesHead,
+.invoicesHead,
+.customersHead,
+.bestSellingHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.lowStockList,
+.todaySalesList,
+.monthSalesList,
+.invoicesList,
+.customersList,
+.bestSellingList {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.lowStockItem,
+.todaySalesItem,
+.monthSalesItem,
+.invoicesItem,
+.customersItem,
+.bestSellingItem {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.lowStockName,
+.todaySalesDate,
+.monthSalesDate,
+.invNo,
+.custName {
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.lowStockQty,
+.todaySalesAmt,
+.monthSalesAmt,
+.bestSellingQty {
+  font-weight: 900;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* ✅ FIX: Button clickable inside hover slides */
+.customersHead button,
+.invoicesItem button {
+  position: relative;
+  z-index: 9999;
+  pointer-events: auto;
+}
+
+/* =========================
+   OPTIONAL IMAGE CLASS
+========================= */
+.sec-img {
+  width: 100%;
+  max-width: 520px;
+  height: 340px;
+  object-fit: contain;
+  display: block;
+}
