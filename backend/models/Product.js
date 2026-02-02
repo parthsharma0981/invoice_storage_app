@@ -16,6 +16,7 @@ const ProductSchema = new mongoose.Schema(
     leadTimeDays: { type: Number, default: 7 }, // ✅ NEW (supplier delivery time)
 
     hsn: { type: String, default: "" },
+    lowStockThreshold: { type: Number, default: 5 }, // Alert when stock falls below this
   },
   { timestamps: true }
 );

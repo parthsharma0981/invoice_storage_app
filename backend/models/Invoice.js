@@ -34,6 +34,20 @@ const InvoiceSchema = new mongoose.Schema(
     hasEwayBill: { type: String, default: "no" },
     ewayBillNo: { type: String, default: "" },
 
+    // ✅ Payment tracking for partial payments
+    paidAmount: { type: Number, default: 0 },
+    paymentStatus: {
+      type: String,
+      enum: ["unpaid", "partial", "paid"],
+      default: "unpaid"
+    },
+    payments: [{
+      amount: { type: Number, required: true },
+      date: { type: Date, default: Date.now },
+      method: { type: String, default: "cash" }, // cash, upi, bank, card
+      notes: { type: String, default: "" }
+    }],
+
     createdAt: { type: Date, default: Date.now },
   },
   { timestamps: true }

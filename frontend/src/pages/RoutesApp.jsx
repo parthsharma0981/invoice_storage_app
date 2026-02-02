@@ -5,6 +5,11 @@ import Landing from "./Landing";
 import Login from "./Login";
 import Register from "./Register";
 import Payment from "./Payment";
+import Pricing from "./Pricing";
+import Features from "./Features";
+import Contact from "./Contact";
+import ForgotPassword from "./ForgotPassword";
+import ResetPassword from "./ResetPassword";
 
 import Layout from "../components/Layout";
 
@@ -38,10 +43,15 @@ export default function RoutesApp() {
       {/* ✅ Public Routes */}
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* ✅ New Public Routes */}
       <Route path="/register" element={<Register />} />
       <Route path="/payment" element={<Payment />} />
+      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/features" element={<Features />} />
+      <Route path="/contact" element={<Contact />} />
 
       {/* ✅ Protected Routes */}
       <Route

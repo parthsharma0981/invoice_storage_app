@@ -12,6 +12,13 @@ const CompanySchema = new mongoose.Schema(
     gstin: String,
     bankAccNo: { type: String, default: "" },
     ifscCode: { type: String, default: "" },
+
+    // Subscription fields
+    plan: { type: String, enum: ["starter", "pro", "enterprise"], default: "enterprise" },
+    billingCycle: { type: String, enum: ["monthly", "yearly", "lifetime"], default: "lifetime" },
+    planStartDate: { type: Date, default: Date.now },
+    planExpiryDate: { type: Date, default: null },
+    isLifetime: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

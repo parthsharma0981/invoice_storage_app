@@ -1,18 +1,25 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import axios from "axios";
-
-// ---------- BACKEND API CONFIG ----------
-const API_URL = "http://localhost:5000/api";
-
-// Axios instance
-const API = axios.create({ baseURL: API_URL });
-
-// ✅ Attach token in every request
-API.interceptors.request.use((req) => {
-  const token = localStorage.getItem("inv_token");
-  if (token) req.headers.Authorization = `Bearer ${token}`;
-  return req;
-});
+import {
+  loginAPI,
+  fetchUsersAPI,
+  addUserAPI,
+  deleteUserAPI,
+  fetchProductsAPI,
+  addProductAPI,
+  updateStockAPI,
+  deleteProductAPI,
+  fetchCustomersAPI,
+  addCustomerAPI,
+  deleteCustomerAPI,
+  fetchInvoicesAPI,
+  createInvoiceAPI,
+  deleteInvoiceAPI,
+  fetchDuesAPI,
+  addDueAPI,
+  deleteDueAPI,
+  fetchCompanyAPI,
+  updateCompanyAPI,
+} from "../services/api";
 
 // ---------- HELPERS ----------
 const loadLS = (key, fallback) => {
@@ -33,13 +40,14 @@ export function StoreProvider({ children }) {
   // --- AUTH STATE ---
   const [auth, setAuth] = useState(() => {
     const savedAuth = loadLS("inv_auth", null);
+    const savedPlan = loadLS("inv_plan", null);
     const token = localStorage.getItem("inv_token");
 
     if (savedAuth && token) {
-      return { ...savedAuth, token, isLoggedIn: true };
+      return { ...savedAuth, token, isLoggedIn: true, plan: savedPlan };
     }
 
-    return { isLoggedIn: false, username: "", role: "", token: "" };
+    return { isLoggedIn: false, username: "", role: "", token: "", plan: null };
   });
 
   // --- DATA STATES ---
@@ -69,11 +77,11 @@ export function StoreProvider({ children }) {
 
     try {
       const reqs = [
-        API.get("/products"),
-        API.get("/customers"),
-        API.get("/invoices"),
-        API.get("/company"),
-        API.get("/dues"),
+        fetchProductsAPI(),
+        fetchCustomersAPI(),
+        fetchInvoicesAPI(),
+        fetchCompanyAPI(),
+        fetchDuesAPI(),
       ];
 
       const [pRes, cRes, iRes, compRes, dueRes] = await Promise.all(reqs);
@@ -88,7 +96,7 @@ export function StoreProvider({ children }) {
       // ✅ Users only for Admin
       if (auth?.role === "admin") {
         try {
-          const uRes = await API.get("/auth/users");
+          const uRes = await fetchUsersAPI();
           setUsers(uRes.data || []);
         } catch (e) {
           setUsers([]);
@@ -97,7 +105,7 @@ export function StoreProvider({ children }) {
         setUsers([]);
       }
     } catch (err) {
-      console.error("Error loading data from MongoDB:", err?.response?.data || err.message);
+      console.error("Error loading data:", err?.response?.data || err.message);
     }
   };
 
@@ -120,19 +128,23 @@ export function StoreProvider({ children }) {
         })
       );
       localStorage.setItem("inv_token", auth.token);
+      if (auth.plan) {
+        localStorage.setItem("inv_plan", JSON.stringify(auth.plan));
+      }
     }
   }, [auth]);
 
   // ---------- AUTH FUNCTIONS ----------
   const login = async (username, password) => {
     try {
-      const res = await API.post("/auth/login", { username, password });
+      const res = await loginAPI({ username, password });
 
       const newAuth = {
         isLoggedIn: true,
         username: res.data.user.username,
         role: res.data.user.role,
         token: res.data.token,
+        plan: res.data.plan || { plan: "enterprise", billingCycle: "lifetime", isLifetime: true },
       };
 
       // ✅ Save immediately
@@ -144,6 +156,7 @@ export function StoreProvider({ children }) {
           role: newAuth.role,
         })
       );
+      localStorage.setItem("inv_plan", JSON.stringify(newAuth.plan));
 
       // ✅ Update state
       setAuth(newAuth);
@@ -165,8 +178,9 @@ export function StoreProvider({ children }) {
   const logout = () => {
     localStorage.removeItem("inv_token");
     localStorage.removeItem("inv_auth");
+    localStorage.removeItem("inv_plan");
 
-    setAuth({ isLoggedIn: false, username: "", role: "", token: "" });
+    setAuth({ isLoggedIn: false, username: "", role: "", token: "", plan: null });
 
     // ✅ Clear old data
     setUsers([]);
@@ -180,7 +194,7 @@ export function StoreProvider({ children }) {
   // ---------- USERS ----------
   const addUser = async ({ username, password, role }) => {
     try {
-      const res = await API.post("/auth/add-user", { username, password, role });
+      const res = await addUserAPI({ username, password, role });
       setUsers((prev) => [res.data.user, ...prev]);
       return { ok: true };
     } catch (err) {
@@ -190,7 +204,7 @@ export function StoreProvider({ children }) {
 
   const deleteUser = async (id) => {
     try {
-      await API.delete(`/auth/user/${id}`);
+      await deleteUserAPI(id);
       setUsers((prev) => prev.filter((u) => u._id !== id));
       return { ok: true };
     } catch (err) {
@@ -202,7 +216,7 @@ export function StoreProvider({ children }) {
   // ---------- PRODUCTS ----------
   const addProduct = async (p) => {
     try {
-      const res = await API.post("/products", p);
+      const res = await addProductAPI(p);
       setProducts((prev) => [res.data, ...prev]);
       return { ok: true };
     } catch (err) {
@@ -212,7 +226,7 @@ export function StoreProvider({ children }) {
 
   const deleteProduct = async (id) => {
     try {
-      await API.delete(`/products/${id}`);
+      await deleteProductAPI(id);
       setProducts((prev) => prev.filter((p) => p._id !== id));
       return { ok: true };
     } catch (err) {
@@ -222,7 +236,7 @@ export function StoreProvider({ children }) {
 
   const updateStock = async (id, newStock) => {
     try {
-      await API.put(`/products/${id}`, { stock: Number(newStock) });
+      await updateStockAPI(id, Number(newStock));
       setProducts((prev) =>
         prev.map((p) => (p._id === id ? { ...p, stock: Number(newStock) } : p))
       );
@@ -235,7 +249,7 @@ export function StoreProvider({ children }) {
   // ---------- CUSTOMERS ----------
   const addCustomer = async (c) => {
     try {
-      const res = await API.post("/customers", c);
+      const res = await addCustomerAPI(c);
       setCustomers((prev) => [res.data, ...prev]);
       return { ok: true };
     } catch (err) {
@@ -245,7 +259,7 @@ export function StoreProvider({ children }) {
 
   const deleteCustomer = async (id) => {
     try {
-      await API.delete(`/customers/${id}`);
+      await deleteCustomerAPI(id);
       setCustomers((prev) => prev.filter((c) => c._id !== id));
       return { ok: true };
     } catch (err) {
@@ -256,10 +270,10 @@ export function StoreProvider({ children }) {
   // ---------- DUES ----------
   const addDue = async (dueData) => {
     try {
-      await API.post("/dues", dueData);
+      await addDueAPI(dueData);
 
       // ✅ Always reload dues fresh
-      const dueRes = await API.get("/dues");
+      const dueRes = await fetchDuesAPI();
       setDues(dueRes.data || []);
 
       return { ok: true };
@@ -270,7 +284,7 @@ export function StoreProvider({ children }) {
 
   const deleteDue = async (id) => {
     try {
-      await API.delete(`/dues/${id}`);
+      await deleteDueAPI(id);
       setDues((prev) => prev.filter((d) => d._id !== id));
       return { ok: true };
     } catch (err) {
@@ -301,12 +315,12 @@ export function StoreProvider({ children }) {
       gstAmount: Math.round(gstAmount),
       grandTotal,
       companySnapshot: company,
-      invoiceNo: "SER/25-26/" + (invoices.length + 1),
+      invoiceNo: "SER/25-26/" + Date.now().toString().slice(-6) + Math.floor(Math.random() * 100),
       createdAt: new Date().toISOString(),
     };
 
     try {
-      const res = await API.post("/invoices", invoiceData);
+      const res = await createInvoiceAPI(invoiceData);
 
       setInvoices((prev) => [res.data.invoice, ...prev]);
 
@@ -326,7 +340,7 @@ export function StoreProvider({ children }) {
 
   const deleteInvoice = async (id) => {
     try {
-      await API.delete(`/invoices/${id}`);
+      await deleteInvoiceAPI(id);
       setInvoices((prev) => prev.filter((inv) => inv._id !== id));
       return { ok: true };
     } catch (err) {
@@ -337,7 +351,7 @@ export function StoreProvider({ children }) {
   // ---------- COMPANY ----------
   const updateCompany = async (updatedData) => {
     try {
-      const res = await API.post("/company", updatedData);
+      const res = await updateCompanyAPI(updatedData);
       setCompany(res.data);
       return { ok: true };
     } catch (err) {

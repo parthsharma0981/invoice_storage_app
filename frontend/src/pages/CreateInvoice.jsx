@@ -87,6 +87,20 @@ export default function CreateInvoice() {
       return alert("E-Way Bill Number is required!");
     }
 
+    // ✅ Stock validation - check if any product has insufficient stock
+    for (const item of invoiceItems) {
+      const product = products.find((p) => p._id === item.productId);
+      if (!product) {
+        return alert(`Product not found: ${item.name}`);
+      }
+      if (product.stock <= 0) {
+        return alert(`"${product.name}" is out of stock! Please remove it from the invoice.`);
+      }
+      if (item.qty > product.stock) {
+        return alert(`"${product.name}" has only ${product.stock} units in stock. You are trying to add ${item.qty} units.`);
+      }
+    }
+
     const res = await createInvoice({
       customerId,
       items: invoiceItems,
@@ -223,12 +237,32 @@ export default function CreateInvoice() {
                 value={it.productId}
                 onChange={(e) => updateItem(index, "productId", e.target.value)}
               >
-                {products.map((p) => (
-                  <option key={p._id} value={p._id}>
-                    {p.name} (Stock: {p.stock})
-                  </option>
-                ))}
+                {products.map((prod) => {
+                  const isOutOfStock = prod.stock <= 0;
+                  return (
+                    <option
+                      key={prod._id}
+                      value={prod._id}
+                      disabled={isOutOfStock}
+                      style={isOutOfStock ? { color: '#999', fontStyle: 'italic' } : {}}
+                    >
+                      {prod.name} {isOutOfStock ? '(Out of Stock)' : `(Stock: ${prod.stock})`}
+                    </option>
+                  );
+                })}
               </select>
+
+              {/* Warning if selected product is out of stock */}
+              {p && p.stock <= 0 && (
+                <div style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: 4 }}>
+                  ⚠️ This product is out of stock!
+                </div>
+              )}
+              {p && p.stock > 0 && qty > p.stock && (
+                <div style={{ color: '#f59e0b', fontSize: '0.8rem', marginTop: 4 }}>
+                  ⚠️ Only {p.stock} units available
+                </div>
+              )}
 
               <input
                 className="qty"

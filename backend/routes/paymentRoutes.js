@@ -10,6 +10,7 @@ const Company = require("../models/Company");
 
 const sendMail = require("../utils/sendMail");
 const { baseTemplate } = require("../utils/emailTemplates");
+const { getPlanPrice } = require("../utils/planLimits");
 
 // Razorpay instance
 const razorpay = new Razorpay({
@@ -58,8 +59,13 @@ router.post("/verify-and-register", async (req, res) => {
       companyName,
       ownerName,
       email,
-      plan,
+      planName,
+      billingCycle,
     } = req.body;
+
+    // Default to starter/monthly if not provided
+    const selectedPlan = (planName || "starter").toLowerCase();
+    const selectedCycle = billingCycle || "monthly";
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return res.status(400).json({ msg: "Payment details missing" });
@@ -99,7 +105,17 @@ router.post("/verify-and-register", async (req, res) => {
 
     await adminUser.save();
 
-    // ✅ Step 4: Create Company
+    // ✅ Step 4: Create Company with plan info
+    const planStartDate = new Date();
+    let planExpiryDate = null;
+    if (selectedCycle === "monthly") {
+      planExpiryDate = new Date(planStartDate);
+      planExpiryDate.setMonth(planExpiryDate.getMonth() + 1);
+    } else if (selectedCycle === "yearly") {
+      planExpiryDate = new Date(planStartDate);
+      planExpiryDate.setFullYear(planExpiryDate.getFullYear() + 1);
+    }
+
     const company = new Company({
       adminId: adminUser._id,
       name: companyName,
@@ -107,6 +123,11 @@ router.post("/verify-and-register", async (req, res) => {
       phone1: "",
       address: "",
       gstin: "",
+      plan: selectedPlan,
+      billingCycle: selectedCycle,
+      planStartDate,
+      planExpiryDate,
+      isLifetime: false,
     });
 
     await company.save();
@@ -124,7 +145,8 @@ router.post("/verify-and-register", async (req, res) => {
           <div style="padding:12px; border:1px solid #e5e7eb; border-radius:12px; background:#f9fafb;">
             <p style="margin:0;"><b>Login Username:</b> ${email}</p>
             <p style="margin:6px 0 0;"><b>Password:</b> ${plainPassword}</p>
-            <p style="margin:6px 0 0;"><b>Plan:</b> ${plan || "monthly"}</p>
+            <p style="margin:6px 0 0;"><b>Plan:</b> ${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} (${selectedCycle})</p>
+            <p style="margin:6px 0 0;"><b>Amount Paid:</b> ₹${getPlanPrice(selectedPlan, selectedCycle)}</p>
           </div>
 
           <p style="margin-top:12px;">

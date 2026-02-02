@@ -9,6 +9,10 @@ const UserSchema = new mongoose.Schema(
 
     // staff ke liye owner admin id
     adminId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+
+    // Password reset fields
+    resetToken: { type: String },
+    resetTokenExpiry: { type: Date },
   },
   { timestamps: true }
 );

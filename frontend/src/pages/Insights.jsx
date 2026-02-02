@@ -1,5 +1,31 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import {
+  fetchReorderAPI,
+  fetchBestSellingAPI,
+  fetchLowDemandAPI,
+  fetchMonthlyReportAPI,
+  fetchProfitAnalysisAPI,
+  fetchTopCustomersAPI,
+  fetchBestSellingRangeAPI,
+  fetchDeadStockAPI,
+  fetchSmartReorderAPI,
+} from "../services/api";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend
+} from "recharts";
+import "./Insights.css";
+
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"];
 
 export default function Insights() {
   const [loading, setLoading] = useState(true);
@@ -20,19 +46,14 @@ export default function Insights() {
   // ADVANCED INSIGHTS
   // =========================
   const [profitAnalysis, setProfitAnalysis] = useState(null);
-
   const [topCustomers, setTopCustomers] = useState([]);
   const [repeatCustomers, setRepeatCustomers] = useState([]);
-
   const [bestSellingTrends, setBestSellingTrends] = useState({
     weekly: [],
     monthly: [],
   });
-
   const [deadStock, setDeadStock] = useState([]);
   const [smartReorder, setSmartReorder] = useState([]);
-
-  const API_BASE = "http://localhost:5000";
 
   // =========================
   // FETCH ALL INSIGHTS
@@ -41,25 +62,12 @@ export default function Insights() {
     try {
       setLoading(true);
 
-      const token = localStorage.getItem("inv_token");
-
-      if (!token) {
-        alert("Token missing! Please logout and login again.");
-        setLoading(false);
-        return;
-      }
-
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
-
+      // Parallel Fetching
       const [
         reorderRes,
         bestRes,
         lowRes,
         reportRes,
-
-        // ADVANCED
         profitRes,
         topCustRes,
         bestMonthRes,
@@ -67,65 +75,34 @@ export default function Insights() {
         deadRes,
         smartReorderRes,
       ] = await Promise.all([
-        // =========================
-        // BASIC ROUTES
-        // =========================
-        axios.get(`${API_BASE}/api/insights/reorder`, { headers }),
-        axios.get(`${API_BASE}/api/insights/best-selling?days=30`, { headers }),
-        axios.get(`${API_BASE}/api/insights/low-demand?days=30`, { headers }),
-        axios.get(`${API_BASE}/api/insights/monthly-report`, { headers }),
-
-        // =========================
-        // ADVANCED ROUTES (FIXED BASE)
-        // =========================
-        axios.get(`${API_BASE}/api/insights-advanced/profit?days=30`, { headers }),
-        axios.get(`${API_BASE}/api/insights-advanced/top-customers?days=30`, { headers }),
-
-        // Best selling trends
-        axios.get(
-          `${API_BASE}/api/insights-advanced/best-selling-range?range=month&limit=10`,
-          { headers }
-        ),
-        axios.get(
-          `${API_BASE}/api/insights-advanced/best-selling-range?range=week&limit=10`,
-          { headers }
-        ),
-
-        // Dead stock (90 days = 3 months)
-        axios.get(`${API_BASE}/api/insights-advanced/dead-stock?days=90`, { headers }),
-
-        // Smart reorder
-        axios.get(`${API_BASE}/api/insights-advanced/smart-reorder?days=30`, { headers }),
+        fetchReorderAPI(),
+        fetchBestSellingAPI(30),
+        fetchLowDemandAPI(30),
+        fetchMonthlyReportAPI(),
+        fetchProfitAnalysisAPI(30),
+        fetchTopCustomersAPI(30),
+        fetchBestSellingRangeAPI("month", 10),
+        fetchBestSellingRangeAPI("week", 10),
+        fetchDeadStockAPI(90),
+        fetchSmartReorderAPI(30),
       ]);
 
-      // =========================
-      // BASIC SETTERS
-      // =========================
       setReorder(reorderRes.data || []);
-      setBestSelling(
-        bestRes.data || { topProducts: [], topCategories: [], topRevenueProducts: [] }
-      );
+      setBestSelling(bestRes.data || { topProducts: [], topCategories: [], topRevenueProducts: [] });
       setLowDemand(lowRes.data || []);
       setMonthlyReport(reportRes.data || null);
-
-      // =========================
-      // ADVANCED SETTERS
-      // =========================
       setProfitAnalysis(profitRes.data || null);
-
       setTopCustomers(topCustRes.data?.topCustomers || []);
       setRepeatCustomers(topCustRes.data?.repeatCustomers || []);
-
       setBestSellingTrends({
         monthly: bestMonthRes.data?.topProducts || [],
         weekly: bestWeekRes.data?.topProducts || [],
       });
-
       setDeadStock(deadRes.data || []);
       setSmartReorder(smartReorderRes.data || []);
+
     } catch (err) {
       console.log("Insights Error:", err?.response?.data || err.message);
-      alert("Insights load nahi ho paya. Backend issue ho sakta hai.");
     } finally {
       setLoading(false);
     }
@@ -138,408 +115,189 @@ export default function Insights() {
 
   if (loading) {
     return (
-      <div style={{ padding: "20px" }}>
-        <h2>📊 Insights</h2>
-        <p>Loading insights...</p>
+      <div className="insights-container" style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <div className="loader"></div>
+        <h2 style={{ marginLeft: "10px" }}>Analyzing Data...</h2>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: "20px" }}>
-      {/* =========================
-          NAVBAR
-      ========================= */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "12px 16px",
-          borderRadius: "12px",
-          border: "1px solid #ddd",
-          background: "#fff",
-          position: "sticky",
-          top: "10px",
-          zIndex: 10,
-          boxShadow: "0px 2px 10px rgba(0,0,0,0.05)",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <button
-            onClick={() => window.history.back()}
-            style={{
-              padding: "8px 12px",
-              borderRadius: "10px",
-              border: "1px solid #ccc",
-              background: "#f7f7f7",
-              cursor: "pointer",
-              fontWeight: "600",
-            }}
-          >
+    <div className="insights-container">
+      {/* --- HEADER --- */}
+      <div className="insights-header">
+        <div className="header-left">
+          <button className="icon-btn" onClick={() => window.history.back()}>
             ⬅ Back
           </button>
-
-          <h2 style={{ margin: 0 }}>📊 AI Insights Dashboard</h2>
+          <h2 className="insights-title">📊 Business Intelligence</h2>
         </div>
-
-        <div style={{ display: "flex", gap: "10px" }}>
-          <button
-            onClick={fetchAllInsights}
-            style={{
-              padding: "8px 14px",
-              borderRadius: "10px",
-              border: "1px solid #ccc",
-              cursor: "pointer",
-              fontWeight: "600",
-              background: "#f7f7f7",
-            }}
-          >
-            🔄 Refresh
+        <div className="header-right">
+          <button className="icon-btn primary" onClick={fetchAllInsights}>
+            🔄 Refresh Data
           </button>
-
-          <button
-            onClick={() => alert("Coming Soon: Export PDF Report")}
-            style={{
-              padding: "8px 14px",
-              borderRadius: "10px",
-              border: "1px solid #ccc",
-              cursor: "pointer",
-              fontWeight: "600",
-              background: "#f7f7f7",
-            }}
-          >
-            📄 Export
+          <button className="icon-btn" onClick={() => alert("Report Export feature coming soon!")}>
+            📄 Export PDF
           </button>
         </div>
       </div>
 
-      {/* =========================
-          MONTHLY REPORT
-      ========================= */}
-      <div
-        style={{
-          marginTop: "20px",
-          padding: "15px",
-          borderRadius: "10px",
-          border: "1px solid #ddd",
-          background: "#fafafa",
-        }}
-      >
-        <h3 style={{ marginTop: 0 }}>🗓️ Monthly Report</h3>
-        {monthlyReport?.summary ? (
-          <pre style={{ whiteSpace: "pre-wrap", margin: 0 }}>{monthlyReport.summary}</pre>
-        ) : (
-          <p>No report available</p>
-        )}
-      </div>
+      {/* --- KEY METRICS GRID --- */}
+      <div className="insights-grid grid-cols-3">
 
-      {/* =========================
-          PROFIT ANALYSIS
-      ========================= */}
-      <div style={{ marginTop: "30px" }}>
-        <h3>💰 Profit Analysis (Last 30 Days)</h3>
-
-        {!profitAnalysis ? (
-          <p>No profit data</p>
-        ) : (
-          <div
-            style={{
-              border: "1px solid #ddd",
-              padding: "12px",
-              borderRadius: "10px",
-              background: "#f0fff4",
-            }}
-          >
-            <p style={{ margin: "6px 0" }}>Revenue: ₹{profitAnalysis.totalRevenue}</p>
-            <p style={{ margin: "6px 0" }}>Cost: ₹{profitAnalysis.totalCost}</p>
-            <p style={{ margin: "6px 0", fontWeight: "bold" }}>
-              Profit: ₹{profitAnalysis.profit}
-            </p>
-            <p style={{ margin: "6px 0" }}>
-              Profit %: {profitAnalysis.profitPercent}%
-            </p>
+        {/* 1. MONTHLY REPORT */}
+        <div className="insight-card report-card full-width">
+          <div className="card-header">
+            <span className="card-title">🗓️ Monthly Executive Summary</span>
           </div>
-        )}
-      </div>
-
-      {/* =========================
-          TOP CUSTOMERS
-      ========================= */}
-      <div style={{ marginTop: "30px" }}>
-        <h3>👑 Top Customers (Last 30 Days)</h3>
-
-        {topCustomers.length === 0 ? (
-          <p>No top customers</p>
-        ) : (
-          topCustomers.map((c, i) => (
-            <div
-              key={i}
-              style={{
-                border: "1px solid #ddd",
-                padding: "12px",
-                borderRadius: "10px",
-                marginBottom: "10px",
-                background: "#eef2ff",
-              }}
-            >
-              <h4 style={{ margin: "0 0 6px 0" }}>
-                {i + 1}. {c.name}
-              </h4>
-              <p style={{ margin: "4px 0" }}>Total Invoices: {c.invoiceCount}</p>
-              <p style={{ margin: "4px 0" }}>Total Spent: ₹{c.totalSpent}</p>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* =========================
-          REPEAT CUSTOMERS
-      ========================= */}
-      <div style={{ marginTop: "30px" }}>
-        <h3>🔁 Repeat Customers</h3>
-
-        {repeatCustomers.length === 0 ? (
-          <p>No repeat customers</p>
-        ) : (
-          repeatCustomers.map((c, i) => (
-            <div
-              key={i}
-              style={{
-                border: "1px solid #ddd",
-                padding: "12px",
-                borderRadius: "10px",
-                marginBottom: "10px",
-                background: "#fff7ed",
-              }}
-            >
-              <h4 style={{ margin: "0 0 6px 0" }}>
-                {i + 1}. {c.name}
-              </h4>
-              <p style={{ margin: "4px 0" }}>Invoices: {c.invoiceCount}</p>
-              <p style={{ margin: "4px 0" }}>Total Spent: ₹{c.totalSpent}</p>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* =========================
-          BEST SELLING TRENDS
-      ========================= */}
-      <div style={{ marginTop: "30px" }}>
-        <h3>📈 Best Selling Trends</h3>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
-          {/* MONTHLY */}
-          <div style={{ border: "1px solid #ddd", padding: "12px", borderRadius: "10px" }}>
-            <h4 style={{ marginTop: 0 }}>📅 Monthly Top Products</h4>
-
-            {bestSellingTrends.monthly.length === 0 ? (
-              <p>No monthly trend data</p>
-            ) : (
-              bestSellingTrends.monthly.map((p, i) => (
-                <p key={i} style={{ margin: "6px 0" }}>
-                  {i + 1}. {p.name} — <b>{p.totalQtySold}</b> sold (₹{p.revenue})
-                </p>
-              ))
-            )}
-          </div>
-
-          {/* WEEKLY */}
-          <div style={{ border: "1px solid #ddd", padding: "12px", borderRadius: "10px" }}>
-            <h4 style={{ marginTop: 0 }}>🗓️ Weekly Top Products</h4>
-
-            {bestSellingTrends.weekly.length === 0 ? (
-              <p>No weekly trend data</p>
-            ) : (
-              bestSellingTrends.weekly.map((p, i) => (
-                <p key={i} style={{ margin: "6px 0" }}>
-                  {i + 1}. {p.name} — <b>{p.totalQtySold}</b> sold (₹{p.revenue})
-                </p>
-              ))
-            )}
+          <div className="report-text">
+            {monthlyReport?.summary || "No adequate data for this month yet."}
           </div>
         </div>
-      </div>
 
-      {/* =========================
-          DEAD STOCK
-      ========================= */}
-      <div style={{ marginTop: "30px" }}>
-        <h3>🧊 Dead Stock (No Sale 90 Days)</h3>
-
-        {deadStock.length === 0 ? (
-          <p>✅ No dead stock found</p>
-        ) : (
-          deadStock.slice(0, 15).map((p, i) => (
-            <div
-              key={i}
-              style={{
-                border: "1px solid #ddd",
-                padding: "12px",
-                borderRadius: "10px",
-                marginBottom: "10px",
-                background: "#fff1f2",
-              }}
-            >
-              <h4 style={{ margin: "0 0 6px 0" }}>{p.name}</h4>
-              <p style={{ margin: "4px 0" }}>Category: {p.category || "-"}</p>
-              <p style={{ margin: "4px 0" }}>Stock: {p.stock}</p>
-              <p style={{ margin: "4px 0", fontWeight: "bold" }}>
-                Suggestion: {p.suggestion}
-              </p>
+        {/* 2. PROFIT CARD */}
+        {profitAnalysis && (
+          <div className="insight-card profit-card">
+            <div className="card-header" style={{ borderBottomColor: "rgba(255,255,255,0.2)" }}>
+              <span className="card-title">💰 Net Profit (30 Days)</span>
             </div>
-          ))
-        )}
-      </div>
-
-      {/* =========================
-          SMART REORDER (ADVANCED)
-      ========================= */}
-      <div style={{ marginTop: "30px" }}>
-        <h3>🚚 Smart Reorder (Lead Time Included)</h3>
-
-        {smartReorder.length === 0 ? (
-          <p>No smart reorder suggestions</p>
-        ) : (
-          smartReorder
-            .filter((x) => x.suggestedReorderQty > 0)
-            .slice(0, 15)
-            .map((p, i) => (
-              <div
-                key={i}
-                style={{
-                  border: "1px solid #ddd",
-                  padding: "12px",
-                  borderRadius: "10px",
-                  marginBottom: "10px",
-                  background: "#ecfeff",
-                }}
-              >
-                <h4 style={{ margin: "0 0 6px 0" }}>{p.name}</h4>
-                <p style={{ margin: "4px 0" }}>Supplier: {p.supplier || "Unknown"}</p>
-                <p style={{ margin: "4px 0" }}>Stock: {p.stock}</p>
-                <p style={{ margin: "4px 0" }}>Avg Daily Sales: {p.avgDailySales}</p>
-                <p style={{ margin: "4px 0" }}>Lead Time Days: {p.leadTimeDays}</p>
-                <p style={{ margin: "4px 0", fontWeight: "bold" }}>
-                  Suggested Reorder Qty: {p.suggestedReorderQty}
-                </p>
-                <p style={{ margin: "4px 0", fontWeight: "bold" }}>
-                  Status: {p.status}
-                </p>
+            <div style={{ textAlign: "center", margin: "1rem 0" }}>
+              <span className="profit-value">₹{profitAnalysis.profit.toLocaleString()}</span>
+              <span style={{ fontSize: "0.9rem", opacity: 0.9 }}>Net Profit Margin: {profitAnalysis.profitPercent}%</span>
+            </div>
+            <div className="profit-stats">
+              <div className="profit-stat-item">
+                <small>Revenue</small>
+                <div style={{ fontWeight: "bold" }}>₹{profitAnalysis.totalRevenue.toLocaleString()}</div>
               </div>
-            ))
-        )}
-      </div>
-
-      {/* =========================
-          BASIC REORDER (OLD)
-      ========================= */}
-      <div style={{ marginTop: "30px" }}>
-        <h3>📦 Smart Reorder Suggestions (Basic)</h3>
-
-        {reorder.length === 0 ? (
-          <p>No reorder suggestions</p>
-        ) : (
-          reorder.slice(0, 10).map((p) => (
-            <div
-              key={p.productId}
-              style={{
-                border: "1px solid #ddd",
-                padding: "12px",
-                borderRadius: "10px",
-                marginBottom: "10px",
-                background: p.status === "URGENT" ? "#fff3f3" : "#fff",
-              }}
-            >
-              <h4 style={{ margin: "0 0 6px 0" }}>
-                {p.name}{" "}
-                <span style={{ fontSize: "12px", color: "#555" }}>
-                  ({p.category || "No Category"})
-                </span>
-              </h4>
-
-              <p style={{ margin: "4px 0" }}>📌 Stock: {p.currentStock}</p>
-              <p style={{ margin: "4px 0" }}>📈 Avg Daily Sales: {p.avgDailySales}</p>
-              <p style={{ margin: "4px 0" }}>
-                ⏳ Days Left: {p.daysLeft === null ? "No Sales Data" : p.daysLeft}
-              </p>
-              <p style={{ margin: "4px 0" }}>
-                🛒 Suggested Reorder Qty: {p.suggestedReorderQty}
-              </p>
-              <p style={{ margin: "4px 0", fontWeight: "bold" }}>🚨 Status: {p.status}</p>
+              <div className="profit-stat-item">
+                <small>Cost</small>
+                <div style={{ fontWeight: "bold" }}>₹{profitAnalysis.totalCost.toLocaleString()}</div>
+              </div>
             </div>
-          ))
+          </div>
         )}
+
+        {/* 3. CATEGORY CHART */}
+        <div className="insight-card">
+          <div className="card-header">
+            <span className="card-title">🥧 Sales by Category</span>
+          </div>
+          <div className="chart-container">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={bestSelling.topCategories}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="totalQtySold"
+                  nameKey="category"
+                  label
+                >
+                  {bestSelling.topCategories.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* 4. BEST SELLING CHART */}
+        <div className="insight-card full-width">
+          <div className="card-header">
+            <span className="card-title">� Top Selling Products (Qty)</span>
+          </div>
+          <div className="chart-container">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={bestSelling.topProducts.slice(0, 10)}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                <XAxis dataKey="name" hide />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="totalQtySold" fill="#3b82f6" name="Quantity Sold" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
       </div>
 
-      {/* =========================
-          BEST SELLING (BASIC)
-      ========================= */}
-      <div style={{ marginTop: "30px" }}>
-        <h3>🏆 Best Selling Insights (Basic)</h3>
+      {/* --- DETAILED LISTS GRID --- */}
+      <div className="insights-grid">
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
-          <div style={{ border: "1px solid #ddd", padding: "12px", borderRadius: "10px" }}>
-            <h4 style={{ marginTop: 0 }}>🔥 Top Products (Qty)</h4>
-            {bestSelling.topProducts.length === 0 ? (
-              <p>No data</p>
+        {/* SMART REORDER */}
+        <div className="insight-card">
+          <div className="card-header">
+            <span className="card-title">🚚 Smart Reorder (AI)</span>
+          </div>
+          <div className="list-container">
+            {smartReorder.filter(x => x.suggestedReorderQty > 0).length === 0 ? (
+              <p className="text-muted">No reorder needed right now.</p>
             ) : (
-              bestSelling.topProducts.map((x, i) => (
-                <p key={i} style={{ margin: "6px 0" }}>
-                  {i + 1}. {x._id} — <b>{x.totalQtySold}</b> sold
-                </p>
+              smartReorder.filter(x => x.suggestedReorderQty > 0).slice(0, 5).map((p, i) => (
+                <div key={i} className="list-item urgent-item">
+                  <span className="item-rank">!</span>
+                  <div className="item-info">
+                    <span className="item-name">{p.name}</span>
+                    <span className="item-meta">Stock: {p.stock} | Lead Time: {p.leadTimeDays}d</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="tag warning">Order {p.suggestedReorderQty}</span>
+                  </div>
+                </div>
               ))
             )}
+            {smartReorder.filter(x => x.suggestedReorderQty > 0).length > 5 && (
+              <p style={{ textAlign: "center", fontSize: "0.8rem", color: "var(--primary)" }}>+ {smartReorder.length - 5} more items</p>
+            )}
           </div>
+        </div>
 
-          <div style={{ border: "1px solid #ddd", padding: "12px", borderRadius: "10px" }}>
-            <h4 style={{ marginTop: 0 }}>📌 Top Categories</h4>
-            {bestSelling.topCategories.length === 0 ? (
-              <p>No data</p>
+        {/* DEAD STOCK */}
+        <div className="insight-card">
+          <div className="card-header">
+            <span className="card-title">🧊 Dead Stock (90 Days)</span>
+          </div>
+          <div className="list-container">
+            {deadStock.length === 0 ? (
+              <p className="text-muted">✅ Inventory is healthy.</p>
             ) : (
-              bestSelling.topCategories.map((x, i) => (
-                <p key={i} style={{ margin: "6px 0" }}>
-                  {i + 1}. {x.category} — <b>{x.totalQtySold}</b> sold
-                </p>
+              deadStock.slice(0, 5).map((p, i) => (
+                <div key={i} className="list-item">
+                  <span className="item-rank" style={{ color: "#ef4444" }}>{i + 1}</span>
+                  <div className="item-info">
+                    <span className="item-name">{p.name}</span>
+                    <span className="item-meta">Stock: {p.stock}</span>
+                  </div>
+                  <span className="tag danger">Clear</span>
+                </div>
               ))
             )}
           </div>
         </div>
-      </div>
 
-      {/* =========================
-          LOW DEMAND
-      ========================= */}
-      <div style={{ marginTop: "30px" }}>
-        <h3>🐢 Low Demand Products (Avoid Buying)</h3>
-
-        {lowDemand.length === 0 ? (
-          <p>✅ No low demand products found</p>
-        ) : (
-          lowDemand.map((p) => (
-            <div
-              key={p.productId}
-              style={{
-                border: "1px solid #ddd",
-                padding: "12px",
-                borderRadius: "10px",
-                marginBottom: "10px",
-                background: "#fffbe6",
-              }}
-            >
-              <h4 style={{ margin: "0 0 6px 0" }}>
-                {p.name}{" "}
-                <span style={{ fontSize: "12px", color: "#555" }}>
-                  ({p.category || "No Category"})
-                </span>
-              </h4>
-              <p style={{ margin: "4px 0" }}>📦 Stock: {p.stock}</p>
-              <p style={{ margin: "4px 0" }}>📉 Sold Last 30 Days: {p.soldLastDays}</p>
-              <p style={{ margin: "4px 0", fontWeight: "bold" }}>💡 {p.suggestion}</p>
+        {/* TOP CUSTOMERS */}
+        <div className="insight-card">
+          <div className="card-header">
+            <span className="card-title">👑 Top Customers</span>
+          </div>
+          {topCustomers.slice(0, 5).map((c, i) => (
+            <div key={i} className="list-item">
+              <span className="item-rank">#{i + 1}</span>
+              <div className="item-info">
+                <span className="item-name">{c.name}</span>
+                <span className="item-meta">{c.invoiceCount} Orders</span>
+              </div>
+              <span className="item-value">₹{c.totalSpent.toLocaleString()}</span>
             </div>
-          ))
-        )}
+          ))}
+        </div>
+
       </div>
     </div>
   );

@@ -13,8 +13,8 @@ export default function Navbar() {
       </div>
 
       <div className="nav-links">
-        <a href="#features" className="nav-item">Features</a>
-        <a href="#pricing" className="nav-item">Pricing</a>
+        <Link to="/features" className={`nav-item ${pathname === "/features" ? "active" : ""}`}>Features</Link>
+        <Link to="/pricing" className={`nav-item ${pathname === "/pricing" ? "active" : ""}`}>Pricing</Link>
 
         <Link className={`nav-item ${pathname === "/login" ? "active" : ""}`} to="/login">
           Login

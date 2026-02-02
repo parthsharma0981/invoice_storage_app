@@ -10,7 +10,16 @@ export default function Payment() {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
 
-  const AMOUNT = 299;
+  // Plan pricing configuration
+  const PLAN_PRICING = {
+    starter: { monthly: 299, yearly: 2999 },
+    pro: { monthly: 499, yearly: 4999 },
+    enterprise: { monthly: 999, yearly: 9999 },
+  };
+
+  const planName = data?.planName || "starter";
+  const billingCycle = data?.billingCycle || "monthly";
+  const AMOUNT = PLAN_PRICING[planName]?.[billingCycle] || 299;
 
   const handlePay = async () => {
     try {
@@ -36,7 +45,7 @@ export default function Payment() {
 
       // ✅ 2) Razorpay Checkout
       const options = {
-        key: "rzp_test_S6znMZIe3dnb8h",
+        key: import.meta.env.VITE_RAZORPAY_KEY,
         amount: order.amount,
         currency: order.currency,
         name: "VaniBoard SaaS",
@@ -60,7 +69,8 @@ export default function Payment() {
                   companyName: data.companyName,
                   ownerName: data.ownerName,
                   email: data.email,
-                  plan: "monthly",
+                  planName: planName,
+                  billingCycle: billingCycle,
                 }),
               }
             );
@@ -148,8 +158,8 @@ export default function Payment() {
         </p>
 
         <div style={{ marginTop: 12 }}>
-          <h3>Plan: Monthly</h3>
-          <p className="muted">₹ {AMOUNT} / month</p>
+          <h3>Plan: {planName.charAt(0).toUpperCase() + planName.slice(1)} ({billingCycle})</h3>
+          <p className="muted">₹ {AMOUNT} / {billingCycle === "monthly" ? "month" : "year"}</p>
         </div>
 
         {msg && <div className="error">{msg}</div>}

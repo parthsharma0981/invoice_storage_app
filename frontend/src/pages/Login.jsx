@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useStore } from "../store/StoreContext";
+// Note: Koi CSS import nahi chahiye kyunki hum index.css use kar rahe hain
 
 export default function Login() {
   const { login, auth } = useStore();
@@ -27,7 +28,7 @@ export default function Login() {
     }
   }, [location.state]);
 
-  // ✅ LOGIN SUCCESS ke baad redirect
+  // ✅ Redirect logic
   useEffect(() => {
     if (auth?.isLoggedIn) {
       if (auth?.role === "staff") {
@@ -52,98 +53,114 @@ export default function Login() {
       return;
     }
 
-    // ✅ TOKEN FIX (Insights ke liye must)
-    // Backend/storecontext inv_token use kar raha hai, but Insights.jsx token use kar raha tha
-    // Isliye dono me save kar rahe hain
     if (res?.token) {
-      localStorage.setItem("inv_token", res.token); // ✅ main token
-      localStorage.setItem("token", res.token);     // ✅ fallback token (Insights.jsx old code)
+      localStorage.setItem("inv_token", res.token);
+      localStorage.setItem("token", res.token);
     }
-
-    // redirect useEffect karega
   };
 
   return (
-    <div className={`login-wrap ${theme}`}>
-      <div className="login-topbar">
-        <button className="btn" type="button" onClick={goHome}>
-          ← Home
-        </button>
+    <div className={`login-container ${theme}`}>
+      {/* Background Shapes for Luxury Feel */}
+      <div className="bg-shape shape-1"></div>
+      <div className="bg-shape shape-2"></div>
 
-        <button
-          className="btn"
-          type="button"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        >
-          {theme === "dark" ? "☀ Light" : "🌙 Dark"}
-        </button>
-      </div>
-
-      <div className="login-card">
-        <div className="login-left">
-          <div className="login-brand">
-            <div className="logo-dot" />
+      <div className="login-glass-card">
+        {/* LEFT SIDE: Brand & Features */}
+        <div className="login-left-panel">
+          <div className="brand-header">
+            <div className="logo-icon"></div>
             <h2>InvoicePro</h2>
           </div>
 
-          <p className="login-sub">
-            Smart Billing • Inventory • Customer Dues • Professional Invoices
-          </p>
+          <div className="hero-content">
+            <h3>Manage Business<br />Like a Pro.</h3>
+            <p>Smart Billing • Inventory • Analytics</p>
 
-          <div className="login-hero">
-            <img
-              src="/images/login-hero.png"
-              alt="InvoicePro Login"
-              className="login-hero-img"
-            />
+            <div className="feature-list">
+              <div className="feature-item">
+                <span className="icon">🛡️</span> Multi-Company Security
+              </div>
+              <div className="feature-item">
+                <span className="icon">👥</span> Staff Role Control
+              </div>
+              <div className="feature-item">
+                <span className="icon">🧾</span> GST & Invoice Print
+              </div>
+              <div className="feature-item">
+                <span className="icon">🔔</span> Auto Email Alerts
+              </div>
+            </div>
           </div>
 
-          <div className="login-features">
-            <div className="feat">✅ Multi-Company Secure Data</div>
-            <div className="feat">✅ Staff Accounts & Role Control</div>
-            <div className="feat">✅ Invoice + GST + Print</div>
-            <div className="feat">✅ Email Alerts & Reminders</div>
+          {/* Optional: Hero Image Area */}
+          <div className="hero-illustration">
+            {/* Agar image nahi hai toh ye empty rahega ya placeholder dikhayega */}
+            <div className="glass-placeholder"></div>
           </div>
         </div>
 
-        <div className="login-right">
-          <h1 className="login-title">Welcome Back 👋</h1>
-          <p className="login-muted">Login with your Admin / Staff credentials</p>
-
-          <form onSubmit={handleSubmit} className="login-form">
-            <div className="field">
-              <label>Username</label>
-              <input
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter username"
-                required
-              />
-            </div>
-
-            <div className="field">
-              <label>Password</label>
-              <input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
-                type="password"
-                required
-              />
-            </div>
-
-            {msg && <div className="login-error">{msg}</div>}
-
-            <button className="btn primary login-btn" type="submit">
-              Login
+        {/* RIGHT SIDE: Form */}
+        <div className="login-right-panel">
+          <div className="top-nav">
+            <button className="nav-link" onClick={goHome}>
+              ← Home
             </button>
-          </form>
+            <button
+              className="theme-toggle"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              {theme === "dark" ? "☀ Light" : "🌙 Dark"}
+            </button>
+          </div>
 
-          <div className="login-bottom">
-            <span className="muted">New company?</span>{" "}
-            <span className="link" onClick={() => navigate("/register")}>
-              Register Now →
-            </span>
+          <div className="form-wrapper">
+            <div className="form-header">
+              <h1>Welcome Back</h1>
+              <p>Please enter your details to sign in.</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="styled-form">
+              <div className="input-group">
+                <label>Username</label>
+                <input
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="e.g. admin"
+                  required
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Password</label>
+                <input
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  type="password"
+                  required
+                />
+              </div>
+
+              {msg && <div className="error-message-box">⚠️ {msg}</div>}
+
+              <button className="submit-btn" type="submit">
+                Sign In
+              </button>
+            </form>
+
+            <div className="form-footer">
+              <span className="link-text" onClick={() => navigate("/forgot-password")}>
+                Forgot Password?
+              </span>
+            </div>
+
+            <div className="form-footer">
+              <span className="text-muted">New Company?</span>
+              <span className="link-text" onClick={() => navigate("/register")}>
+                Register Now →
+              </span>
+            </div>
           </div>
         </div>
       </div>

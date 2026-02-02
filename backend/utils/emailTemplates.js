@@ -151,6 +151,66 @@ function dueCompanyMail({ companyName, customerName, amount }) {
   });
 }
 
+function passwordResetMail({ userName, companyName, resetUrl }) {
+  return baseTemplate({
+    title: "Password Reset Request 🔑",
+    bodyHtml: `
+      <p>Hello <b>${userName}</b>,</p>
+      <p>We received a request to reset your password for <b>${companyName}</b>.</p>
+
+      <div style="padding:16px; margin:16px 0; text-align:center;">
+        <a href="${resetUrl}" style="display:inline-block; padding:12px 24px; background:#0b0f19; color:#ffffff; text-decoration:none; border-radius:8px; font-weight:bold;">
+          Reset Password
+        </a>
+      </div>
+
+      <p style="color:#6b7280; font-size:13px;">
+        This link will expire in 1 hour. If you didn't request this, please ignore this email.
+      </p>
+
+      <div style="padding:12px; border:1px solid #e5e7eb; border-radius:12px; background:#f9fafb; margin-top:12px;">
+        <p style="margin:0; font-size:12px; color:#6b7280;">
+          <b>Direct Link:</b> ${resetUrl}
+        </p>
+      </div>
+    `,
+  });
+}
+
+function lowStockAlertMail({ companyName, lowStockProducts }) {
+  const productRows = lowStockProducts.map(
+    (p) => `<tr>
+      <td style="padding:8px; border-bottom:1px solid #e5e7eb;">${p.name}</td>
+      <td style="padding:8px; border-bottom:1px solid #e5e7eb; text-align:center;">${p.stock}</td>
+      <td style="padding:8px; border-bottom:1px solid #e5e7eb; text-align:center;">${p.lowStockThreshold || 5}</td>
+    </tr>`
+  ).join("");
+
+  return baseTemplate({
+    title: "Low Stock Alert ⚠️",
+    bodyHtml: `
+      <p><b>${companyName}</b> has products with low stock levels:</p>
+
+      <table style="width:100%; border-collapse:collapse; margin:12px 0;">
+        <thead>
+          <tr style="background:#f3f4f6;">
+            <th style="padding:8px; text-align:left; border-bottom:2px solid #e5e7eb;">Product</th>
+            <th style="padding:8px; text-align:center; border-bottom:2px solid #e5e7eb;">Stock</th>
+            <th style="padding:8px; text-align:center; border-bottom:2px solid #e5e7eb;">Threshold</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${productRows}
+        </tbody>
+      </table>
+
+      <p style="margin-top:12px;">
+        Please restock these items to avoid running out.
+      </p>
+    `,
+  });
+}
+
 module.exports = {
   baseTemplate,
   productAddedMail,
@@ -160,7 +220,11 @@ module.exports = {
   customerGreetingMail,
   customerAddedCompanyMail,
 
-  // ✅ NEW EXPORTS
+  // ✅ DUE EXPORTS
   dueCustomerMail,
   dueCompanyMail,
+
+  // ✅ NEW EXPORTS
+  passwordResetMail,
+  lowStockAlertMail,
 };
