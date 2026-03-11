@@ -1,6 +1,4 @@
 const Invoice = require("../models/Invoice");
-
-// ✅ Record a payment against an invoice
 exports.recordPayment = async (req, res) => {
     try {
         const { id } = req.params;

@@ -38,8 +38,9 @@ exports.forgotPassword = async (req, res) => {
         // Get company name for email
         const company = await Company.findOne({ adminId: user.role === "admin" ? user._id : user.adminId });
 
-        // Build reset URL
-        const resetUrl = `http://localhost:5173/reset-password?token=${resetToken}`;
+        // Build reset URL (uses env variable for production)
+        const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+        const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
 
         // Send email
         await sendMail({

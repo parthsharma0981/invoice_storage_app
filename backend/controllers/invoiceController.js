@@ -109,9 +109,18 @@ exports.deleteInvoice = async (req, res) => {
         const invoice = await Invoice.findOne({ _id: req.params.id, adminId: req.user.adminId });
         if (!invoice) return res.status(404).json({ msg: "Invoice not found" });
 
+        // ✅ Restore stock for each item in the invoice
+        const items = invoice.items || [];
+        for (const item of items) {
+            await Product.findByIdAndUpdate(item.productId, {
+                $inc: { stock: item.qty }
+            });
+        }
+
         await Invoice.findByIdAndDelete(req.params.id);
-        res.json({ msg: "Invoice deleted successfully" });
+        res.json({ msg: "Invoice deleted successfully, stock restored" });
     } catch (err) {
+        console.error("Delete Invoice Error:", err);
         res.status(500).json({ msg: "Server Error during delete" });
     }
 };

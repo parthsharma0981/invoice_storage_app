@@ -12,11 +12,17 @@ const sendMail = require("../utils/sendMail");
 const { baseTemplate } = require("../utils/emailTemplates");
 const { getPlanPrice } = require("../utils/planLimits");
 
-// Razorpay instance
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+// Razorpay instance - Lazy initialization to ensure env vars are loaded
+let razorpay = null;
+function getRazorpay() {
+  if (!razorpay) {
+    razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+  }
+  return razorpay;
+}
 
 // 🔥 Random password generator
 function generatePassword(length = 10) {
@@ -36,7 +42,7 @@ router.post("/create-order", async (req, res) => {
 
     if (!amount) return res.status(400).json({ msg: "Amount is required" });
 
-    const order = await razorpay.orders.create({
+    const order = await getRazorpay().orders.create({
       amount: amount * 100,
       currency: "INR",
       receipt: "receipt_" + Date.now(),

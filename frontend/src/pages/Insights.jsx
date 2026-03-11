@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   fetchReorderAPI,
   fetchBestSellingAPI,
@@ -24,6 +24,282 @@ import {
   Legend
 } from "recharts";
 import "./Insights.css";
+
+// PDF Export Helper Function
+const exportToPDF = (data) => {
+  const {
+    monthlyReport,
+    profitAnalysis,
+    bestSelling,
+    topCustomers,
+    smartReorder,
+    deadStock,
+  } = data;
+
+  const today = new Date().toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+
+  const printContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Business Insights Report - ${today}</title>
+      <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+          font-family: 'Segoe UI', Arial, sans-serif; 
+          padding: 40px; 
+          color: #1e293b;
+          line-height: 1.6;
+        }
+        .header { 
+          text-align: center; 
+          margin-bottom: 30px; 
+          padding-bottom: 20px;
+          border-bottom: 3px solid #3b82f6;
+        }
+        .header h1 { 
+          font-size: 28px; 
+          color: #1e293b;
+          margin-bottom: 5px;
+        }
+        .header p { color: #64748b; font-size: 14px; }
+        .section { 
+          margin-bottom: 30px; 
+          page-break-inside: avoid;
+        }
+        .section-title { 
+          font-size: 18px; 
+          font-weight: 700; 
+          color: #3b82f6;
+          margin-bottom: 15px;
+          padding-bottom: 8px;
+          border-bottom: 2px solid #e2e8f0;
+        }
+        .summary-box {
+          background: #f8fafc;
+          padding: 15px 20px;
+          border-radius: 8px;
+          border-left: 4px solid #3b82f6;
+          margin-bottom: 20px;
+        }
+        .profit-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 20px;
+          margin-bottom: 20px;
+        }
+        .profit-box {
+          background: linear-gradient(135deg, #10b981, #059669);
+          color: white;
+          padding: 20px;
+          border-radius: 12px;
+          text-align: center;
+        }
+        .profit-box.revenue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .profit-box.cost { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .profit-box .label { font-size: 12px; opacity: 0.9; text-transform: uppercase; }
+        .profit-box .value { font-size: 24px; font-weight: 800; }
+        table { 
+          width: 100%; 
+          border-collapse: collapse; 
+          margin-top: 10px;
+        }
+        th, td { 
+          padding: 12px 15px; 
+          text-align: left; 
+          border-bottom: 1px solid #e2e8f0;
+        }
+        th { 
+          background: #f1f5f9; 
+          font-weight: 700;
+          color: #475569;
+          font-size: 12px;
+          text-transform: uppercase;
+        }
+        tr:hover { background: #f8fafc; }
+        .tag {
+          display: inline-block;
+          padding: 4px 10px;
+          border-radius: 20px;
+          font-size: 11px;
+          font-weight: 600;
+        }
+        .tag.success { background: #d1fae5; color: #059669; }
+        .tag.warning { background: #fef3c7; color: #d97706; }
+        .tag.danger { background: #fee2e2; color: #dc2626; }
+        .footer {
+          margin-top: 40px;
+          padding-top: 20px;
+          border-top: 1px solid #e2e8f0;
+          text-align: center;
+          color: #94a3b8;
+          font-size: 12px;
+        }
+        @media print {
+          body { padding: 20px; }
+          .section { page-break-inside: avoid; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>📊 Business Intelligence Report</h1>
+        <p>Generated on ${today}</p>
+      </div>
+
+      <!-- Monthly Summary -->
+      <div class="section">
+        <div class="section-title">🗓️ Executive Summary</div>
+        <div class="summary-box">
+          ${monthlyReport?.summary || "No data available for this period."}
+        </div>
+      </div>
+
+      <!-- Profit Analysis -->
+      ${profitAnalysis ? `
+      <div class="section">
+        <div class="section-title">💰 Profit Analysis (Last 30 Days)</div>
+        <div class="profit-grid">
+          <div class="profit-box revenue">
+            <div class="label">Total Revenue</div>
+            <div class="value">₹${profitAnalysis.totalRevenue?.toLocaleString() || 0}</div>
+          </div>
+          <div class="profit-box cost">
+            <div class="label">Total Cost</div>
+            <div class="value">₹${profitAnalysis.totalCost?.toLocaleString() || 0}</div>
+          </div>
+          <div class="profit-box">
+            <div class="label">Net Profit (${profitAnalysis.profitPercent || 0}%)</div>
+            <div class="value">₹${profitAnalysis.profit?.toLocaleString() || 0}</div>
+          </div>
+        </div>
+      </div>
+      ` : ''}
+
+      <!-- Top Selling Products -->
+      <div class="section">
+        <div class="section-title">🔥 Top Selling Products</div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Product Name</th>
+              <th>Quantity Sold</th>
+              <th>Revenue</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${bestSelling.topProducts?.slice(0, 10).map((p, i) => `
+              <tr>
+                <td>${i + 1}</td>
+                <td>${p.name}</td>
+                <td>${p.totalQtySold || 0}</td>
+                <td>₹${(p.totalRevenue || 0).toLocaleString()}</td>
+              </tr>
+            `).join('') || '<tr><td colspan="4">No data available</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Top Customers -->
+      <div class="section">
+        <div class="section-title">👑 Top Customers</div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Customer Name</th>
+              <th>Orders</th>
+              <th>Total Spent</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${topCustomers?.slice(0, 10).map((c, i) => `
+              <tr>
+                <td>${i + 1}</td>
+                <td>${c.name}</td>
+                <td>${c.invoiceCount || 0}</td>
+                <td>₹${(c.totalSpent || 0).toLocaleString()}</td>
+              </tr>
+            `).join('') || '<tr><td colspan="4">No data available</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Smart Reorder Suggestions -->
+      ${smartReorder?.filter(x => x.suggestedReorderQty > 0).length > 0 ? `
+      <div class="section">
+        <div class="section-title">🚚 Reorder Recommendations</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Current Stock</th>
+              <th>Lead Time</th>
+              <th>Suggested Order</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${smartReorder.filter(x => x.suggestedReorderQty > 0).slice(0, 10).map(p => `
+              <tr>
+                <td>${p.name}</td>
+                <td>${p.stock}</td>
+                <td>${p.leadTimeDays} days</td>
+                <td><span class="tag warning">${p.suggestedReorderQty} units</span></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      ` : ''}
+
+      <!-- Dead Stock -->
+      ${deadStock?.length > 0 ? `
+      <div class="section">
+        <div class="section-title">🧊 Dead Stock (No Sales in 90 Days)</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Stock</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${deadStock.slice(0, 10).map(p => `
+              <tr>
+                <td>${p.name}</td>
+                <td>${p.stock}</td>
+                <td><span class="tag danger">Clear Stock</span></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      ` : ''}
+
+      <div class="footer">
+        <p>This report was auto-generated by VaniBoard Business Intelligence</p>
+        <p>© ${new Date().getFullYear()} VaniBoard SaaS</p>
+      </div>
+    </body>
+    </html>
+  `;
+
+  // Open new window and print
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(printContent);
+  printWindow.document.close();
+
+  // Wait for content to load then print
+  printWindow.onload = function () {
+    printWindow.print();
+  };
+};
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"];
 
@@ -136,7 +412,14 @@ export default function Insights() {
           <button className="icon-btn primary" onClick={fetchAllInsights}>
             🔄 Refresh Data
           </button>
-          <button className="icon-btn" onClick={() => alert("Report Export feature coming soon!")}>
+          <button className="icon-btn" onClick={() => exportToPDF({
+            monthlyReport,
+            profitAnalysis,
+            bestSelling,
+            topCustomers,
+            smartReorder,
+            deadStock,
+          })}>
             📄 Export PDF
           </button>
         </div>
